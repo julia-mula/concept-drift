@@ -5,6 +5,9 @@ __pycache__/
 
 # C extensions
 *.so
+data
+preprocessing/chunk_issues
+issues.csv
 
 # Distribution / packaging
 .Python

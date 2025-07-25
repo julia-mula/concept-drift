@@ -1,0 +1,5 @@
+ID,Jira_ID,Issue_Key,URL,Title,Description,Description_Text,Description_Code,Type,Priority,Status,
+Resolution,Creation_Date,Estimation_Date,Resolution_Date,Last_Updated,Story_Point,Timespent,
+In_Progress_Minutes,Total_Effort_Minutes,Resolution_Time_Minutes,Title_Changed_After_Estimation,
+Description_Changed_After_Estimation,Story_Point_Changed_After_Estimation,Pull_Request_URL,Creator_ID,
+Reporter_ID,Assignee_ID,Project_ID,Sprint_ID
