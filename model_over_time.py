@@ -98,13 +98,12 @@ if __name__ == "__main__":
 
     for idx, filename in enumerate(sorted(files_to_process)):
         if filename.endswith(".csv"):
-            print(f"\n🔎 Processing {filename} ...")
+            print(f"\nProcessing {filename} ...")
 
             filepath = os.path.join(input_folder, filename)
             type_ohe, priority_ohe, full_df = fit_global_encoders(filepath)
 
             test_X, test_y = prepare_latest_data(full_df, percent=20, type_ohe=type_ohe, priority_ohe=priority_ohe)
-
 
             all_results = []
 
@@ -130,5 +129,3 @@ if __name__ == "__main__":
                 writer = csv.DictWriter(f, fieldnames=["percent", "MAE", "MSE", "R2", "MMRE"])
                 writer.writeheader()
                 writer.writerows(all_results)
-
-            print(f"Results saved to {result_path}")

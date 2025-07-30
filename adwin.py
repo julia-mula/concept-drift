@@ -6,99 +6,68 @@ from sklearn.ensemble import RandomForestRegressor
 from river.drift import ADWIN
 import matplotlib.pyplot as plt
 import warnings
-warnings.filterwarnings("ignore", category=UserWarning)
+warnings.filterwarnings("ignore")
 
 
-# ---------- DATA PREPARATION ----------
+CSV_FILE = "data/cleaned/issues_3.csv" 
+INITIAL_TRAIN_SIZE = 100              
+DELTA = 0.01                           
+
 def prepare_data_from_df(df):
     model = SentenceTransformer("all-MiniLM-L6-v2")
     sentences = [f"{t} {d}" for t, d in zip(df["Title"], df["Description"])]
     embeddings = model.encode(sentences)
 
-    type_ohe = OneHotEncoder(sparse_output=False)
-    priority_ohe = OneHotEncoder(sparse_output=False)
+    type_ohe = OneHotEncoder(sparse_output=False, handle_unknown="ignore")
+    priority_ohe = OneHotEncoder(sparse_output=False, handle_unknown="ignore")
 
     type_encoded = type_ohe.fit_transform(df[["Type"]])
     priority_encoded = priority_ohe.fit_transform(df[["Priority"]])
 
     X = np.hstack((embeddings, type_encoded, priority_encoded))
-    y = np.log1p(df["Result"].astype(float))  
+    y = np.log1p(df["Result"].astype(float))
 
-    return X, y, df.index
+    return X, y, type_ohe, priority_ohe
 
+df = pd.read_csv(CSV_FILE, on_bad_lines="skip")
 
-# ---------- MAIN ----------
-if __name__ == "__main__":
-    filepath = "final_data_project_3.csv"
-    df = pd.read_csv(filepath, on_bad_lines="skip")
+X_all, y_all, type_ohe, priority_ohe = prepare_data_from_df(df)
 
-    df = df.iloc[::-1].reset_index(drop=True)
+model = RandomForestRegressor(n_estimators=100, random_state=42)
+adwin = ADWIN(delta=DELTA)
+errors = []
+drift_points = []
 
-    X_all, y_all, idx_all = prepare_data_from_df(df)
+X_train, y_train = X_all[:INITIAL_TRAIN_SIZE], y_all[:INITIAL_TRAIN_SIZE]
+model.fit(X_train, y_train)
 
-    window_sizes = [60, 70, 100]
-    deltas = [0.001, 0.05]
+for i in range(INITIAL_TRAIN_SIZE, len(X_all)):
+    x_i = X_all[i].reshape(1, -1)
+    y_true = y_all[i]
 
-    results = []
+    y_pred = model.predict(x_i)[0]
+    error = abs(np.expm1(y_true) - np.expm1(y_pred)) / np.expm1(y_true)
+    errors.append(error)
 
-    for w_size in window_sizes:
-        for delta in deltas:
-            adwin = ADWIN(delta=delta)
-            model = RandomForestRegressor(
-                n_estimators=100,
-                max_depth=None,
-                random_state=42,
-            )
-
-            start_point = w_size
-            drift_points = []
-            errors = []
-
-            X_train = X_all[:w_size]
-            y_train = y_all[:w_size]
-
-            model.fit(X_train, y_train)
-
-            for i in range(start_point, len(X_all)):
-                X_test = X_all[i].reshape(1, -1)
-                if i > 600:
-                      y_true = np.log1p(300) 
-                else:
-                    y_true = y_all[i]
-
-                y_pred = model.predict(X_test)[0]
-                y_true_orig = np.expm1(y_true)
-                y_pred_orig = np.expm1(y_pred)
-                error = abs(y_true_orig - y_pred_orig) / y_true_orig
-                errors.append(error)
-
-                drift_detected = adwin.update(error)
-
-        
-
-                if drift_detected:
-                    drift_points.append(i)
-                    train_start = max(0, i - w_size + 1)
-                    X_train = X_all[train_start:i + 1]
-                    y_train = y_all[train_start:i + 1]
-                    model.fit(X_train, y_train)
+    adwin.update(error) 
 
 
-            results.append((w_size, delta, len(drift_points)))
+    if adwin.drift_detected:
+        print(f"Drift detected at index {i}")
+        drift_points.append(i - INITIAL_TRAIN_SIZE)
 
-    print("\nDrift detection results for parameter combinations:")
-    for w_size, delta, num_drifts in results:
-        print(f"Window size: {w_size}, delta: {delta:.4f} -> Detected drifts: {num_drifts}")
+        train_start = max(0, i - INITIAL_TRAIN_SIZE)
+        model.fit(X_all[train_start:i], y_all[train_start:i])
 
-    plt.figure(figsize=(16, 8))
-    plt.plot(errors, label="Relative Error (MMRE)", linewidth=1)
-    for dp in drift_points:
-        plt.axvline(x=dp - start_point, color='red', linestyle='--', linewidth=1, alpha=0.7,
-                    label='Concept Drift' if dp == drift_points[0] else "")
-    plt.title(f"Errors and Drift Detection (window={w_size}, delta={delta})")
-    plt.xlabel("Project Index (relative)")
-    plt.ylabel("Relative Error")
-    plt.legend()
-    plt.grid(True)
-    plt.tight_layout()
-    plt.show()
+
+plt.figure(figsize=(14, 6))
+plt.plot(errors, label="Relative Error (MMRE)", linewidth=1)
+for idx, dp in enumerate(drift_points):
+    plt.axvline(x=dp, color='red', linestyle='--', label='Drift Detected' if idx == 0 else "")
+plt.xlabel("Sample Index (relative to test start)")
+plt.ylabel("Relative Error")
+plt.title("ADWIN Concept Drift Detection")
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+plt.show()

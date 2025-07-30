@@ -77,12 +77,12 @@ if __name__ == "__main__":
             file_path = os.path.join(cleaned_dir, filename)
             print(f"\nProcessing {filename}...")
 
-            
-            df = pd.read_csv(file_path, on_bad_lines="skip")
-            print(f"  Number of rows: {len(df)}")
-'''
+            try:
+                df = pd.read_csv(file_path, on_bad_lines="skip")
+                print(f" Number of rows: {len(df)}")
+
                 if len(df) < 24:
-                    print(f"  Skipping {filename} (too few rows for sliding window)")
+                    print(f" Skipping {filename} (too few rows for sliding window)")
                     continue
 
                 type_ohe = OneHotEncoder(sparse_output=False, handle_unknown="ignore")
@@ -127,4 +127,4 @@ if __name__ == "__main__":
 
             except Exception as e:
                 print(f"Failed to process {filename}: {e}")
-'''
+
