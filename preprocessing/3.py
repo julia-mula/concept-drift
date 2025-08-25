@@ -53,7 +53,7 @@ def process_and_route_rows(input_csv):
                 ),
                 axis=1
             )
-        else:  # result == "ps"
+        else:  
             df_prj['Story_Point'] = pd.to_numeric(df_prj['Story_Point'], errors='coerce')
             df_prj = df_prj[df_prj['Story_Point'].notna()]
             df_prj = df_prj[df_prj['Story_Point'] > 0]

@@ -97,7 +97,6 @@ if __name__ == "__main__":
                 all_results = []
 
                 for i in range(num_chunks - 1):
-                    print(f"  Window {i+1}: Train on chunk {i}, Test on chunk {i+1}")
 
                     df_train = chunks[i]
                     df_test = chunks[i + 1]

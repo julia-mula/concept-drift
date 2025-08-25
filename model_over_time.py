@@ -108,14 +108,13 @@ if __name__ == "__main__":
             all_results = []
 
             for percent in percentages:
-                print(f"\n--- Training on {percent}% oldest data ---")
+                print(f"\nTraining on {percent}% oldest data")
                 train_X, train_y = prepare_oldest_data(full_df, percent, type_ohe=type_ohe, priority_ohe=priority_ohe)
 
                 base_model = RandomForestRegressor(random_state=42)
                 validator = Validator(base_model)
                 best_model, metrics = validator.tune_and_validate(train_X, train_y, test_X, test_y, param_grid)
 
-                print("--- Metrics ---")
                 for name, val in metrics.items():
                     print(f"{name}: {val:.4f}")
 
