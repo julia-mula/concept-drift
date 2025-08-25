@@ -13,8 +13,8 @@ This project investigates:
 - Can it be countered effectively with existing strategies?
 
 ## Results
-
-Experiments were performed on **15 IT project datasets**.
+Experiments were performed on **15 IT project datasets**, including the widely used **Tawosi et al. dataset**  
+([Tawosi, Moussa, & Sarro – Replication Study on Effort Estimation in Agile](https://doi.org/10.1109/ESEM.2018.00034)).  
 
 Each project was evaluated across four performance metrics:  
 - **MAE** (Mean Absolute Error)  
