@@ -32,6 +32,6 @@ Two scenarios were compared after drift detection:
 
 Performance metrics were analyzed for both scenarios, showing the benefit (or limitations) of retraining in maintaining estimation accuracy.
 
-Here is a full Master thesis: ([PDF file](https://github.com/julia-mula/concept-drift/blob/main/Analysis%20of%20Concept%20Drift%20in%20Effort%20Estimation%20for%20IT%20Projects.pdf)).
+Here is a full Master's thesis: ([PDF file](https://github.com/julia-mula/concept-drift/blob/main/Analysis%20of%20Concept%20Drift%20in%20Effort%20Estimation%20for%20IT%20Projects.pdf)).
 
 
